@@ -2,9 +2,6 @@
 using System;
 using System.Drawing;
 using System.Threading.Tasks;
-
-using Babylon.Blazor.Chemical;
-
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -15,7 +12,7 @@ namespace Babylon.Blazor
     /// Implements the <see cref="Microsoft.AspNetCore.Components.ComponentBase" />
     /// </summary>
     /// <seealso cref="Microsoft.AspNetCore.Components.ComponentBase" />
-    public class BabylonCanvasBase : ComponentBase
+    public abstract class BabylonCanvasBase : ComponentBase
     {
         private BabylonInstance _babylonInstance;
 
@@ -28,10 +25,10 @@ namespace Babylon.Blazor
         /// want the component to refresh when that operation is completed.
         /// </summary>
         /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> representing any asynchronous operation.</returns>
-        protected override async  Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
-           
+
         }
 
         /// <summary>
@@ -39,32 +36,8 @@ namespace Babylon.Blazor
         /// </summary>
         /// <param name="babylonInstance">The babylon instance.</param>
         /// <param name="canvasId">The canvas identifier.</param>
-        protected virtual async Task InitializeSzene(BabylonInstance babylonInstance, string canvasId)
-        {
-            if (SceneData is ChemicalData panelData)
-            {
-                MoleculeCreator creator = new MoleculeCreator(babylonInstance, canvasId, panelData);
-                if (panelData.Atoms.Count > 0)
-                {
-                    if (panelData.ShowErrorText && !String.IsNullOrEmpty(panelData.ErrorText))
-                    {
-                        await babylonInstance.DrawText(canvasId, panelData.ErrorText, Color.DarkRed);
-                    }
-                    else
-                    {
-                        await creator.CreateAsync(this);
-                    }
-                }
-                else
-                {
-                    await babylonInstance.DrawText(canvasId, "Nothing to Draw", Color.DarkRed);
-                }
-            }
-            else
-            {
-                await babylonInstance.DrawText(canvasId, "Scene data is null", Color.DarkRed);
-            }
-        }
+        protected abstract Task InitializeScene(BabylonInstance babylonInstance, string canvasId);
+
 
         /// <summary>
         /// on after render as an asynchronous operation.
@@ -97,7 +70,7 @@ namespace Babylon.Blazor
                     _babylonInstance = await instanceCreator.CreateBabylonAsync();
                     //var scene = await BabylonInstance.CreateTestScene(canvasId);
 
-                    await InitializeSzene(BabylonInstance, CanvasId);
+                    await InitializeScene(BabylonInstance, CanvasId);
                     await Task.Delay(50);
                 }
                 catch (Exception ex)
