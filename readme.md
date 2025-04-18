@@ -2,20 +2,14 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/c6hl19cdakmoxjiq?svg=true)](https://ci.appveyor.com/project/AlexNek/babylonblazor) [![Publish Status](https://img.shields.io/github/workflow/status/AlexNek/BabylonBlazor/Publish?label=publish)](https://www.nuget.org/packages/BaBylon.Blazor/)  [![NuGet Status](https://img.shields.io/nuget/v/Babylon.Blazor)](https://www.nuget.org/packages/Babylon.Blazor/)
 
 This library packages the well-known 3D library [Babylon.js](https://www.babylonjs.com/) into a Razor component that can be used in a C# Blazor project.
-The library is intended to use for creation of molecules visualization and used limited API of Babylon library.  
-It is possible to compare different types of hosting models:
-
-- [Demo application .NET 5.0 Wasm](https://BabylonBlazorApp202208.azurewebsites.net) - Demo application to show different parts of the library.  
-- [Demo application .NET 8.0 SSR](https://babylonblazorappnet80.azurewebsites.net) - Demo application to show different parts of the library. *Server side prerendering mode.*  
-- [Demo application .NET 8.0 Wasm](https://babylonblazorwasmnet80.azurewebsites.net) - Demo application to show different parts of the library.  
-
-[Pubchem Viewer](https://pubchemviewer.azurewebsites.net) - Demo application using library reference. Show chemical information from `pubchem.ncbi.nlm.nih.gov`
+This version of the library seeks to establish more wrapper functions for working with Babylon. The original
+focused on molecule visualization, which has been removed here (it's quite nice and can be found in the wild here: 
+[Pubchem Viewer](https://pubchemviewer.azurewebsites.net) `pubchem.ncbi.nlm.nih.gov`
+).
 
 
 ## Getting Started
-You can find the old version (.NET 5.0 and 6.0 compatible) on the branch [net50](https://github.com/AlexNek/BabylonBlazor/tree/net50)
-New version supports .NET 8.0 and I use Blazor Web App template with server prerendring for demo purposes.
-
+Updated to .NET 9
 ### Prerequisites
 
 To create Blazor Apps, install the latest version of Visual Studio with the ASP.NET and web development workload.
@@ -84,40 +78,7 @@ await builder.Build().RunAsync();
 Add Razor page and replace context to similar code
 ```C#
 @page "/test"
-@using Babylon.Blazor.Chemical
-@rendermode InteractiveAuto
-<h1>Water</h1>
 
-<p> Chemical formula of water is H<sub>2</sub>O</p>
-
-<div style="height: 600px;">
-   <BabylonCanvas CanvasId="Canvas1" SceneData=@PanelData/>
-</div>
-
-@code {
-
-    ChemicalData PanelData { get; } = new ChemicalData();
-
-    async Task InitDataAsync()
-    {
-        // Fake await line
-        await Task.FromResult(1);
-
-
-        PanelData.Atoms.Add(new AtomDescription() { Name = "O", X = 2.5369, Y = -0.1550, Z = 0.0000 });
-        PanelData.Atoms.Add(new AtomDescription() { Name = "H", X = 3.0739, Y =  0.1550, Z = 0.0000 });
-        PanelData.Atoms.Add(new AtomDescription() { Name = "H", X = 2.0000, Y =  0.1550, Z = 0.0000 });
-
-        PanelData.Bonds.Add(new BondDescription(1, 2,  BondDescription.BondType.Single));
-        PanelData.Bonds.Add(new BondDescription(1, 3, BondDescription.BondType.Single));
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        await InitDataAsync();
-    }
-
-}
 ```
 
 Add to _Imports.razor
@@ -129,32 +90,6 @@ Add to _Imports.razor
 ### Demo Application
 
 
-For demo application I implemented: Water, Benzene, Epinephrine and Sprite example.
-All descriptions was get from [PubChem catalog](https://pubchem.ncbi.nlm.nih.gov/).
-As I not found atom size into description - I not set it. The same is for double and triple bonds - the parallel lines rotation vector mostly oriented along the Y axis. Colors selected automatically from color palette.
-If chemist sees something wrong then please tell me. My goal was to create a C# interface to a Java Script library. Not to draw molecules absolutely correctly.
-
-Water  H<sub>2</sub>O
-
-![--water pic--](docs/images/water.png)
-
-Benzene  C<sub>6</sub>H<sub>6</sub>
-
-![--Benzene pic--](docs/images/benzene.png)
-
-Epinephrine C<sub>9</sub>H<sub>13</sub>NO<sub>3</sub>
-
-![--Epinephrine pic--](docs/images/epinephrine.png)
-
-
-In addition, I draw some tests
-
-Test1 (not used anymore)
-
-![--Test1 pic--](docs/images/test1.png)
-
-Test2  
-![--Test2 pic--](docs/images/test2.png)
 
 ### How it works?
 
@@ -216,7 +151,7 @@ public class MyCustomData:IData
 ```C#
 public class MyCustomCanvas : BabylonCanvasBase
 {
-       protected virtual async Task InitializeSzene(LibraryWrapper LibraryWrapper, string canvasId)
+       protected virtual async Task InitializeScene(LibraryWrapper LibraryWrapper, string canvasId)
         {
             MyCustomData panelData;
             if (ChemicalData is MyCustomData)
@@ -228,54 +163,14 @@ public class MyCustomCanvas : BabylonCanvasBase
         }
 }
 ```
-4. Create new Rasor component
+4. Create new Razor component
 ```html
 @inherits MyCustomCanvas
 <canvas id=@CanvasId touch-action="none" />
 ```
 ## What's New
 
-### in Version 1.5
- - update to .NET 9.0
-
-### in Version 1.4
- - update to .NET 8.0
- - added show loading component. Currently we use server-side prerendering, but the babylog engine could only work client-side. The Babylon engine takes some time to render. We want to show the user a 'loading' notification instead of an empty area. The default text is "Loading...". You can change it to something else using 'LoadingTemplate'
- 
- ```csharp
-<BabylonCanvas CanvasId="Canvas1" SceneData=@PanelData>
-    <LoadingTemplate>
-        <div>Loading Custom Demo...</div>
-    </LoadingTemplate>
-</BabylonCanvas>
-```
- 
-### in Version 1.3
-
- - added sprite manager
- - added sprite with base attributes
- - added callback function sample JS to .NET 
- - added sprite sample  
- ![--Sprite sample pic--](docs/images/sprites.png)
-
-### in Version 1.2
-
- - added single color Box
- - added Torus
- - added sample of custom scene drawing  
- ![--Custom Draw pic--](docs/images/customdraw.png)
-
-
-### in Version 1.1
-
-New features:
- - Show errors on 3D canvas
- - Added new component ChemFormulaViewer
- - Expand ChemicalData. Added new properties: ErrorText, MolecularFormula, Name, ShowErrorText
-
-
-
-##Developer notes
+## Developer notes
 
 If you want to change the library then don't use IIS express by debugging because JS files will be not easy to change.
 
